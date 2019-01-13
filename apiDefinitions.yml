@@ -1,0 +1,10 @@
+Authenticate:
+  errorCodes:
+    - WrongIdentityType
+    - NoUser
+    - AuthenticationFailed
+  url: /auth/:origin
+  requestBodyType:
+    abc: string
+  responseDataType:
+    sessionToken: string
