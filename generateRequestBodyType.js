@@ -12,11 +12,8 @@ function makeFirstCharacterUppercase(string) {
 }
 
 let result = `
-import { ErrorCode } from './ErrorCode';
-export namespace ResponseType {
-  export interface BaseResponseType {
-    isSuccessful: boolean;
-    errorCode?: string;
+export namespace RequestBodyType {
+  export interface BaseRequestBodyType {
   }
 `;
 
@@ -44,19 +41,12 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
     console.log(functionName, functionContent);
     const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
     const {
-      errorCodes,
-      url,
       requestBodyType,
-      responseDataType,
     } = functionContent;
     // TODO : What if function has no errorCode?
     result += `
-  export interface ${functionNameInPascalCase}ResponseType extends BaseResponseType {
-    isSuccessful: boolean;
-    errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode;
-    data?: {
-${convertTypeToString(responseDataType, 4)}
-    }
+  export interface ${functionNameInPascalCase}RequestBodyType extends BaseRequestBodyType {
+${convertTypeToString(requestBodyType, 2)}
   }
 `;
   })
@@ -64,4 +54,4 @@ ${convertTypeToString(responseDataType, 4)}
 
 result += '}'
 
-fs.writeFileSync('./generated/ResponseType.ts', result);
+fs.writeFileSync('./generated/RequestBodyType.ts', result);

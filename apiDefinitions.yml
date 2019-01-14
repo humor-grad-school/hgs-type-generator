@@ -1,10 +1,21 @@
-Authenticate:
-  errorCodes:
-    - WrongIdentityType
-    - NoUser
-    - AuthenticationFailed
-  url: /auth/:origin
-  requestBodyType:
-    abc: string
-  responseDataType:
-    sessionToken: string
+# Service:
+#   Api:
+#     errorCodes: stirng[]
+#     url: string
+#     requestBodyType: { [key: string]: type}
+#     responseDataType: { [key: string]: type}
+
+Authentication:
+  Authenticate:
+    errorCodes:
+      - WrongIdentityType
+      - NoUser
+      - AuthenticationFailed
+    url: /auth/:origin
+    method: POST
+    passAuth: true
+    requestBodyType:
+      authenticationRequestData:
+        idToken: string
+    responseDataType:
+      sessionToken: string
