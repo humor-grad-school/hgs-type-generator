@@ -17,25 +17,25 @@ export namespace ErrorCode {
 
 const enums = Object.entries(doc).map(([serviceName, funcitonMap]) => {
   return Object.entries(funcitonMap).map(([functionName, functionContent]) => {
-    console.log(functionName, functionContent);
     const functionNameInPascalCase = toPascalcase(functionName);
     const {
       errorCodes,
-      url,
-      requestBodyType,
-      responseDataType,
     } = functionContent;
     // TODO : What if function has no errorCode?
+    if (!errorCodes) {
+      return undefined;
+    }
     return `  export enum ${functionNameInPascalCase}ErrorCode {
-  ${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(errorCode)}',`).join('\n')}
-    };`;
+${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(errorCode)}',`).join('\n')}
+  };`;
   })
-}).reduce((acc, val) => acc.concat(val), [])
+})
+.filter((text) => text)
+.reduce((acc, val) => acc.concat(val), [])
 
 result += enums.join('\n');
 
-result += `
-}`;
+result += `}`;
 
 
 fs.writeFileSync('./generated/ErrorCode.ts', result);

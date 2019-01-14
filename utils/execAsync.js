@@ -13,6 +13,9 @@ function execAsync(cmd, skipError = true) {
           throw stderr;
         }
       }
+      if (stdout) {
+        console.log(stdout);
+      }
       resolve(stdout);
     });
   });

@@ -15,6 +15,7 @@ async function generateAll() {
     if (!filename.startsWith('generate') || !filename.endsWith('.js') || filename === 'generateAll.js') {
       return;
     }
+    console.log(filename);
     await execAsync(`node ${filename}`, false);
   }));
 }

@@ -7,7 +7,8 @@ fs.watch(__dirname, async (event, filename) => {
   if (isRunning) {
     return;
   }
-  if (filename.startsWith('generate') && filename.endsWith('.js')) {
+  if (filename === 'apiDefinitions.yml'
+    || (filename.startsWith('generate') && filename.endsWith('.js'))) {
     isRunning = true;
     console.log('generate!');
     await execAsync('node generateAll');

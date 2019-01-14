@@ -98,27 +98,23 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
   result += `
 export abstract class Base${serviceName}ApiRouter extends HgsRouter {
   protected readonly handlersInfos: HandlersInfo[] = [`
-  result += Object.entries(functionMap).map(([functionName, functionContent]) => {
-    const {
-      url,
-      method,
-      passAuth,
-    } = functionContent;
-    return `
+    result += Object.entries(functionMap).map(([functionName, functionContent]) => {
+      const {
+        url,
+        method,
+        passAuth,
+      } = functionContent;
+      return `
     {
       handler: this.${toCamelcase(functionName)},
       method: '${method}',
       url: '${url}',
       passAuth: ${passAuth || false},
     },`;
-  }).join('\n');
-  result += `
+    }).join('\n');
+    result += `
   ];
 `
-});
-
-
-Object.entries(doc).map(([serviceName, functionMap]) => {
   Object.entries(functionMap).forEach(([functionName, functionContent]) => {
     const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
     const {
@@ -134,9 +130,9 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
     body: RequestBodyType.${functionNameInPascalCase}RequestBodyType,
     context: HgsRouterContext,
   ): Promise<ResponseType.${functionNameInPascalCase}ResponseType>;
-}
 `;
-  })
+  });
+  result += '}\n'
 });
 
 async function save() {

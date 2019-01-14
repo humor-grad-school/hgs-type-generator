@@ -19,7 +19,7 @@ export namespace RequestBodyType {
 
 function convertTypeToString(type, space) {
   const lines =  JSON.stringify(type, null, 2)
-    .replace(/"/g, '')
+    .replace(/'|"|,/g, '')
     .split('\n');
 
   lines.pop();
@@ -38,7 +38,6 @@ function convertTypeToString(type, space) {
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
   Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
-    console.log(functionName, functionContent);
     const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
     const {
       requestBodyType,
@@ -46,7 +45,7 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
     // TODO : What if function has no errorCode?
     result += `
   export interface ${functionNameInPascalCase}RequestBodyType extends BaseRequestBodyType {
-${convertTypeToString(requestBodyType, 2)}
+${requestBodyType ? convertTypeToString(requestBodyType, 2) : ''}
   }
 `;
   })

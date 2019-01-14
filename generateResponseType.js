@@ -18,11 +18,15 @@ export namespace ResponseType {
     isSuccessful: boolean;
     errorCode?: string;
   }
+  export interface DefaultResponseType extends BaseResponseType {
+    isSuccessful: boolean;
+    errorCode?: ErrorCode.DefaultErrorCode;
+  }
 `;
 
 function convertTypeToString(type, space) {
   const lines =  JSON.stringify(type, null, 2)
-    .replace(/"/g, '')
+    .replace(/"|'|,/g, '')
     .split('\n');
 
   lines.pop();
@@ -41,7 +45,6 @@ function convertTypeToString(type, space) {
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
   Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
-    console.log(functionName, functionContent);
     const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
     const {
       errorCodes,
@@ -53,9 +56,11 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
     result += `
   export interface ${functionNameInPascalCase}ResponseType extends BaseResponseType {
     isSuccessful: boolean;
-    errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode;
+    ${errorCodes
+      ? `errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode | ErrorCode.DefaultErrorCode;`
+      : 'errorCode?: ErrorCode.DefaultErrorCode;'}
     data?: {
-${convertTypeToString(responseDataType, 4)}
+${responseDataType ? convertTypeToString(responseDataType, 4) : ''}
     }
   }
 `;
