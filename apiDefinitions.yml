@@ -48,3 +48,22 @@ User:
     passAuth: false
     requestBodyType:
       key: string
+Post:
+  WritePost:
+    url: /post
+    method: POST
+    passAuth: false
+    requestBodyType:
+      title: string
+      contentS3Key: string
+      boardName: string
+  EncodeMedia:
+    url: /post/encode/:s3Key
+    method: POST
+    passAuth: false
+  LikePost:
+    url: /post/:postId/like
+    method: POST
+    passAuth: false
+    errorCodes:
+      - NotFoundPost
