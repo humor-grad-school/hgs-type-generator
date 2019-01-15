@@ -15,7 +15,7 @@ export namespace ErrorCode {
   }
 `;
 
-const enums = Object.entries(doc).map(([serviceName, funcitonMap]) => {
+result += Object.entries(doc).map(([serviceName, funcitonMap]) => {
   return Object.entries(funcitonMap).map(([functionName, functionContent]) => {
     const functionNameInPascalCase = toPascalcase(functionName);
     const {
@@ -28,14 +28,16 @@ const enums = Object.entries(doc).map(([serviceName, funcitonMap]) => {
     return `  export enum ${functionNameInPascalCase}ErrorCode {
 ${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(errorCode)}',`).join('\n')}
   };`;
-  })
+  });
 })
-.filter((text) => text)
 .reduce((acc, val) => acc.concat(val), [])
+.filter((text) => {
+  return text;
+})
+.join('\n');
 
-result += enums.join('\n');
-
-result += `}`;
+result += `
+}`;
 
 
 fs.writeFileSync('./generated/ErrorCode.ts', result);
