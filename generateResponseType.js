@@ -1,5 +1,7 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
+const toCamelCase = require('./utils/toCamelCase');
+const toPascalCase = require('./utils/toPascalCase');
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
@@ -7,19 +9,48 @@ const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
 
 const doc = yaml.safeLoad(definitionFile);
 
-function makeFirstCharacterUppercase(string) {
-  return `${string.substring(0, 1)}${string.substring(1)}`;
-}
-
 let result = `
 import { ErrorCode } from './ErrorCode';
+`;
+
+
+result += `
+export namespace ResponseDataType {
+  export interface BaseResponseDataType {
+
+  }
+`;
+
+Object.entries(doc).map(([serviceName, funcitonMap]) => {
+  Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
+    const functionNameInPascalCase = toPascalCase(functionName);
+    const {
+      errorCodes,
+      url,
+      requestBodyType,
+      responseDataType,
+    } = functionContent;
+    // TODO : What if function has no errorCode?
+    result += `
+  export interface ${functionNameInPascalCase}ResponseDataType {
+${responseDataType ? convertTypeToString(responseDataType, 2) : ''}
+  }
+`;
+  })
+});
+
+result += `}
+`;
+
+
+result += `
 export namespace ResponseType {
   export interface BaseResponseType {
     isSuccessful: boolean;
     errorCode?: string;
+    data?: {};
   }
   export interface DefaultResponseType extends BaseResponseType {
-    isSuccessful: boolean;
     errorCode?: ErrorCode.DefaultErrorCode;
   }
 `;
@@ -45,7 +76,7 @@ function convertTypeToString(type, space) {
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
   Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
-    const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
+    const functionNameInPascalCase = toPascalCase(functionName);
     const {
       errorCodes,
       url,
@@ -55,13 +86,16 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
     // TODO : What if function has no errorCode?
     result += `
   export interface ${functionNameInPascalCase}ResponseType extends BaseResponseType {
-    isSuccessful: boolean;
-    ${errorCodes
-      ? `errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode | ErrorCode.DefaultErrorCode;`
-      : 'errorCode?: ErrorCode.DefaultErrorCode;'}
-    data?: {
-${responseDataType ? convertTypeToString(responseDataType, 4) : ''}
-    }
+  ${
+    errorCodes
+    ? `  errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode | ErrorCode.DefaultErrorCode;`
+    : '  errorCode?: ErrorCode.DefaultErrorCode;'
+  }${
+    responseDataType
+    ? `
+    data?: ResponseDataType.${functionNameInPascalCase}ResponseDataType;`
+    : ''
+  }
   }
 `;
   })

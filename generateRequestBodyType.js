@@ -1,15 +1,13 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
+const toCamelCase = require('./utils/toCamelCase');
+const toPascalCase = require('./utils/toPascalCase');
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
 });
 
 const doc = yaml.safeLoad(definitionFile);
-
-function makeFirstCharacterUppercase(string) {
-  return `${string.substring(0, 1)}${string.substring(1)}`;
-}
 
 let result = `
 export namespace RequestBodyType {
@@ -38,7 +36,7 @@ function convertTypeToString(type, space) {
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
   Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
-    const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
+    const functionNameInPascalCase = toPascalCase(functionName);
     const {
       requestBodyType,
     } = functionContent;

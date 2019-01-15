@@ -1,15 +1,13 @@
 const fs = require('fs-extra');
 const yaml = require('js-yaml');
+const toCamelCase = require('./utils/toCamelCase');
+const toPascalCase = require('./utils/toPascalCase');
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
 });
 
 const doc = yaml.safeLoad(definitionFile);
-
-function makeFirstCharacterUppercase(string) {
-  return `${string.substring(0, 1)}${string.substring(1)}`;
-}
 
 let result = `
 export namespace ParamMap {
@@ -20,7 +18,7 @@ export namespace ParamMap {
 
 Object.entries(doc).map(([serviceName, functionMap]) => {
   Object.entries(functionMap).forEach(([functionName, functionContent]) => {
-    const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
+    const functionNameInPascalCase = toPascalCase(functionName);
     const {
       url,
     } = functionContent;

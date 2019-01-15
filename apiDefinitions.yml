@@ -5,8 +5,8 @@
 #     requestBodyType: { [key: string]: type}
 #     responseDataType: { [key: string]: type}
 
-Authentication:
-  Authenticate:
+authentication:
+  authenticate:
     url: /auth/:origin
     method: POST
     passAuth: true
@@ -19,8 +19,8 @@ Authentication:
       - WrongIdentityType
       - NoUser
       - AuthenticationFailed
-User:
-  SignUp:
+user:
+  signUp:
     url: /user
     method: POST
     passAuth: true
@@ -34,7 +34,7 @@ User:
       - AuthenticationFailed
       - NoIdentity
       - CreateUserFailed
-  RequestPresignedPostFieldsForAvatar:
+  requestPresignedPostFieldsForAvatar:
     url: /user/avatar/presignedPost
     method: GET
     passAuth: false
@@ -42,14 +42,14 @@ User:
       url: string
       fields: "{ [key: string]: string }"
       key: string
-  UpdateAvatar:
+  updateAvatar:
     url: /user/avatar
     method: PUT
     passAuth: false
     requestBodyType:
       key: string
-Post:
-  WritePost:
+post:
+  writePost:
     url: /post
     method: POST
     passAuth: false
@@ -57,13 +57,47 @@ Post:
       title: string
       contentS3Key: string
       boardName: string
-  EncodeMedia:
+    responseDataType:
+      postId: number
+  encodeMedia:
     url: /post/encode/:s3Key
     method: POST
     passAuth: false
-  LikePost:
+  likePost:
     url: /post/:postId/like
     method: POST
     passAuth: false
     errorCodes:
       - NotFoundPost
+board:
+  createBoard:
+    url: /board/:boardName
+    method: POST
+    passAuth: false
+comment:
+  writeComment:
+    url: /comment
+    method: POST
+    passAuth: false
+    requestBodyType:
+      contentS3Key: string
+      postId: number
+    responseDataType:
+      commentId: number
+  likeComment:
+    url: /comment/:commentId/like
+    method: POST
+    passAuth: false
+    errorCodes:
+      - NotFoundComment
+  writeSubComment:
+    url: /comment/:parentCommentId
+    method: POSt
+    passAuth: false
+    requestBodyType:
+      contentS3Key: string
+      postId: number
+    responseDataType:
+      commentId: number
+    errorCodes:
+      - NotFoundParentComment

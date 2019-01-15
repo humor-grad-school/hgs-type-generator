@@ -1,16 +1,13 @@
 const fs = require('fs-extra');
 const yaml = require('js-yaml');
-const toCamelcase = require('./utils/toCamelcase');
+const toCamelCase = require('./utils/toCamelCase');
+const toPascalCase = require('./utils/toPascalCase');
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
 });
 
 const doc = yaml.safeLoad(definitionFile);
-
-function makeFirstCharacterUppercase(string) {
-  return `${string.substring(0, 1)}${string.substring(1)}`;
-}
 
 let result = `
 import Router from 'koa-router';
@@ -96,7 +93,7 @@ function convertTypeToString(type, space) {
 
 Object.entries(doc).map(([serviceName, functionMap]) => {
   result += `
-export abstract class Base${serviceName}ApiRouter extends HgsRouter {
+export abstract class Base${toPascalCase(serviceName)}ApiRouter extends HgsRouter {
   protected readonly handlersInfos: HandlersInfo[] = [`
     result += Object.entries(functionMap).map(([functionName, functionContent]) => {
       const {
@@ -106,7 +103,7 @@ export abstract class Base${serviceName}ApiRouter extends HgsRouter {
       } = functionContent;
       return `
     {
-      handler: this.${toCamelcase(functionName)},
+      handler: this.${toCamelCase(functionName)},
       method: '${method}',
       url: '${url}',
       passAuth: ${passAuth || false},
@@ -116,7 +113,7 @@ export abstract class Base${serviceName}ApiRouter extends HgsRouter {
   ];
 `
   Object.entries(functionMap).forEach(([functionName, functionContent]) => {
-    const functionNameInPascalCase = makeFirstCharacterUppercase(functionName);
+    const functionNameInPascalCase = toPascalCase(functionName);
     const {
       errorCodes,
       url,
@@ -125,7 +122,7 @@ export abstract class Base${serviceName}ApiRouter extends HgsRouter {
     } = functionContent;
     // TODO : What if function has no errorCode?
     result += `
-  protected abstract async ${toCamelcase(functionName)}(
+  protected abstract async ${toCamelCase(functionName)}(
     paramMap: ParamMap.${functionNameInPascalCase}ParamMap,
     body: RequestBodyType.${functionNameInPascalCase}RequestBodyType,
     context: HgsRouterContext,
