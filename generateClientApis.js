@@ -89,8 +89,10 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
                   ? { Authorization: \`sessionToken \${sessionToken}\` }
                   : {}
                 )
-            },
-            body: JSON.stringify(body),
+            },${
+  method !== 'GET'
+  ? `\n            body: JSON.stringify(body),`
+  : ''}
         });
 
         if (!is2xx(response)) {
