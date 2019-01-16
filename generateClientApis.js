@@ -16,6 +16,7 @@ import { ResponseType, ResponseDataType } from '../ResponseType';
 
 let sessionToken: string;
 let baseServerUrl: string;
+let isDevelopment: boolean;
 
 class HgsRestApiResponse<T extends ResponseType.BaseResponseType, R> {
   constructor(readonly rawResponse: T) {
@@ -47,6 +48,9 @@ export namespace HgsRestApi {
     export function is2xx(response: Response): boolean {
       return response.status >= 200 && response.status < 300;
     }
+    export function setIsDevelopment(yesOrNo: boolean) {
+      isDevelopment = yesOrNo;
+    }
 
 `;
 
@@ -60,6 +64,7 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
       method,
       requestBodyType,
       responseDataType,
+      baseServerUrl,
     } = functionContent;
 
     // <BEFORE>
@@ -79,8 +84,19 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
     export async function ${toCamelCase(functionName)}(
         params: ParamMap.${functionNameInPascalCase}ParamMap,
         body: RequestBodyType.${functionNameInPascalCase}RequestBodyType,
-    ): Promise<HgsRestApiResponse<ResponseType.${functionNameInPascalCase}ResponseType, ResponseDataType.${functionNameInPascalCase}ResponseDataType>> {
-        const url = \`\${baseServerUrl}${replacedUrl}\`;
+    ): Promise<HgsRestApiResponse<ResponseType.${functionNameInPascalCase}ResponseType, ResponseDataType.${functionNameInPascalCase}ResponseDataType>> {`;
+
+    if (baseServerUrl) {
+      result += `
+        const url = isDevelopment
+          ? '${baseServerUrl}${replacedUrl}'
+          : \`\${baseServerUrl}${replacedUrl}\`;
+      `;
+    } else {
+      result += `const url = \`\${baseServerUrl}${replacedUrl}\`;`;
+    }
+
+    result += `
         const response = await fetch(url, {
             method: '${method}',
             headers: {
