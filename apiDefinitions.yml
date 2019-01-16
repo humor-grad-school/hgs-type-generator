@@ -92,7 +92,7 @@ comment:
       - NotFoundComment
   writeSubComment:
     url: /comment/:parentCommentId
-    method: POSt
+    method: POST
     passAuth: false
     requestBodyType:
       contentS3Key: string
@@ -101,3 +101,9 @@ comment:
       commentId: number
     errorCodes:
       - NotFoundParentComment
+viewCount:
+  increaseViewCount:
+    url: /post/:postId/view
+    baseServerUrl: https://viewcount.humorgrad.com
+    method: POST
+    passAuth: true
