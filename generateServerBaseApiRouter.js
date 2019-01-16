@@ -55,7 +55,7 @@ abstract class HgsRouter {
       } = info;
       router[method.toLowerCase()](url, passAuth ? passAuthorizationMiddleware : (_, next) => next(), async (ctx, next) => {
         try {
-          const response = await handler(ctx.params, ctx.request.body, ctx);
+          const response = await handler.call(this, ctx.params, ctx.request.body, ctx);
           ctx.response.body = response;
         } catch(error) {
           // TODO
