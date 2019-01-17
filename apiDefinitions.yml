@@ -34,14 +34,6 @@ user:
       - AuthenticationFailed
       - NoIdentity
       - CreateUserFailed
-  requestPresignedPostFieldsForAvatar:
-    url: /user/avatar/presignedPost
-    method: GET
-    passAuth: false
-    responseDataType:
-      url: string
-      fields: "{ [key: string]: string }"
-      key: string
   updateAvatar:
     url: /user/avatar
     method: PUT
@@ -57,6 +49,7 @@ post:
       title: string
       contentS3Key: string
       boardName: string
+      thumbnailKey?: string
     responseDataType:
       postId: number
   encodeMedia:
@@ -69,6 +62,14 @@ post:
     passAuth: false
     errorCodes:
       - NotFoundPost
+  requestPresignedPostFieldsForContent:
+    url: /post/presignedPost
+    method: GET
+    passAuth: false
+    responseDataType:
+      url: string
+      fields: "{ [key: string]: string }"
+      key: string
 board:
   createBoard:
     url: /board/:boardName
@@ -107,3 +108,12 @@ viewCount:
     baseServerUrl: https://viewcount.humorgrad.com
     method: POST
     passAuth: true
+media:
+  requestPresignedPostFieldsForMedia:
+    url: /media/presignedPost
+    method: GET
+    passAuth: false
+    responseDataType:
+      url: string
+      fields: "{ [key: string]: string }"
+      key: string
