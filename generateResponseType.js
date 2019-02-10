@@ -2,6 +2,13 @@ const fs = require('fs');
 const yaml = require('js-yaml');
 const toCamelCase = require('./utils/toCamelCase');
 const toPascalCase = require('./utils/toPascalCase');
+const path = require('path');
+
+const outDir = path.resolve(process.argv[2]);
+
+if (!process.argv[2]) {
+  console.log('usage: node generateAll {outDir}');
+}
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
@@ -103,4 +110,5 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
 
 result += '}'
 
-fs.writeFileSync('./generated/ResponseType.ts', result);
+const filePath = path.join(outDir, 'ResponseType.ts');
+fs.writeFileSync(filePath, result);

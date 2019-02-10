@@ -1,6 +1,13 @@
 const fs = require('fs');
 const yaml = require('js-yaml');
 const toPascalcase = require('./utils/toPascalcase');
+const path = require('path');
+
+const outDir = path.resolve(process.argv[2]);
+
+if (!process.argv[2]) {
+  console.log('usage: node generateAll {outDir}');
+}
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
@@ -39,5 +46,5 @@ ${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(
 result += `
 }`;
 
-
-fs.writeFileSync('./generated/ErrorCode.ts', result);
+const filePath = path.join(outDir, 'ErrorCode.ts');
+fs.writeFileSync(filePath, result);

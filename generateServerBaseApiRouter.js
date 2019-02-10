@@ -2,6 +2,13 @@ const fs = require('fs-extra');
 const yaml = require('js-yaml');
 const toCamelCase = require('./utils/toCamelCase');
 const toPascalCase = require('./utils/toPascalCase');
+const path = require('path');
+
+const outDir = path.resolve(process.argv[2]);
+
+if (!process.argv[2]) {
+  console.log('usage: node generateAll {outDir}');
+}
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
@@ -133,8 +140,10 @@ export abstract class Base${toPascalCase(serviceName)}ApiRouter extends HgsRoute
 });
 
 async function save() {
-  await fs.mkdirp('./generated/server');
-  await fs.writeFile('./generated/server/ServerBaseApiRouter.ts', result);
+  const generatedDir = path.join(outDir, 'server');
+  await fs.mkdirp(generatedDir);
+  const filePath = path.join(generatedDir, 'ServerBaseApiRouter.ts');
+  await fs.writeFile(filePath, result);
 }
 
 save();

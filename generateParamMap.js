@@ -2,6 +2,13 @@ const fs = require('fs-extra');
 const yaml = require('js-yaml');
 const toCamelCase = require('./utils/toCamelCase');
 const toPascalCase = require('./utils/toPascalCase');
+const path = require('path');
+
+const outDir = path.resolve(process.argv[2]);
+
+if (!process.argv[2]) {
+  console.log('usage: node generateAll {outDir}');
+}
 
 const definitionFile = fs.readFileSync('./apiDefinitions.yml', {
   encoding: 'utf-8',
@@ -35,8 +42,10 @@ ${url.split('/').filter(chunk => chunk.startsWith(':')).map(chunk => `    ${chun
 result += '}'
 
 async function save() {
-  await fs.mkdirp('./generated/server');
-  await fs.writeFile('./generated/ParamMap.ts', result);
+  const generatedDir = path.join(outDir, 'server');
+  await fs.mkdirp(generatedDir);
+  const filePath = path.join(generatedDir, 'ParamMap.ts');
+  await fs.writeFile(filePath, result);
 }
 
 save();

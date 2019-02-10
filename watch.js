@@ -1,5 +1,12 @@
 const fs = require('fs');
 const execAsync = require('./utils/execAsync');
+const path = require('path');
+
+const outDir = path.resolve(process.argv[2]);
+
+if (!process.argv[2]) {
+  console.log('usage: node generateAll {outDir}');
+}
 
 let isRunning = false;
 
@@ -10,7 +17,7 @@ async function runGenerate() {
 
   isRunning = true;
   console.log('generate!');
-  await execAsync('node generateAll');
+  await execAsync(`node ${__dirname}/generateAll ${outDir}`);
   isRunning = false;
 }
 
