@@ -34,7 +34,7 @@ result += Object.entries(doc).map(([serviceName, funcitonMap]) => {
     }
     return `  export enum ${functionNameInPascalCase}ErrorCode {
 ${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(errorCode)}',`).join('\n')}
-  };`;
+  }`;
   });
 })
 .reduce((acc, val) => acc.concat(val), [])
@@ -44,7 +44,8 @@ ${errorCodes.map(errorCode => `    ${toPascalcase(errorCode)} = '${toPascalcase(
 .join('\n');
 
 result += `
-}`;
+}
+`;
 
 const filePath = path.join(outDir, 'ErrorCode.ts');
 fs.writeFileSync(filePath, result);

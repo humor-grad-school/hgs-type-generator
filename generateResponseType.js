@@ -3,6 +3,7 @@ const yaml = require('js-yaml');
 const toCamelCase = require('./utils/toCamelCase');
 const toPascalCase = require('./utils/toPascalCase');
 const path = require('path');
+const convertTypeToString = require('./utils/convertTypeToString');
 
 const outDir = path.resolve(process.argv[2]);
 
@@ -23,9 +24,6 @@ import { ErrorCode } from './ErrorCode';
 
 result += `
 export namespace ResponseDataType {
-  export interface BaseResponseDataType {
-
-  }
 `;
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
@@ -33,14 +31,16 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
     const functionNameInPascalCase = toPascalCase(functionName);
     const {
       errorCodes,
-      url,
       requestBodyType,
       responseDataType,
     } = functionContent;
+    if (!responseDataType) {
+      return;
+    }
     // TODO : What if function has no errorCode?
     result += `
   export interface ${functionNameInPascalCase}ResponseDataType {
-${responseDataType ? convertTypeToString(responseDataType, 2) : ''}
+${convertTypeToString(responseDataType, 2)}
   }
 `;
   })
@@ -52,47 +52,27 @@ result += `}
 
 result += `
 export namespace ResponseType {
-  export interface BaseResponseType {
+  export interface NoDataResponseType {
     isSuccessful: boolean;
     errorCode?: string;
+  }
+
+  export interface BaseResponseType extends NoDataResponseType {
     data?: {};
   }
-  export interface DefaultResponseType extends BaseResponseType {
-    errorCode?: ErrorCode.DefaultErrorCode;
-  }
 `;
-
-function convertTypeToString(type, space) {
-  const lines =  JSON.stringify(type, null, 2)
-    .replace(/"|'|,/g, '')
-    .split('\n');
-
-  lines.pop();
-  lines.shift();
-
-  return lines.map((line) => {
-      line = `${' '.repeat(space)}${line}`;
-      const endOfLine = line.substring(line.length - 2);
-      if (endOfLine.match(/[a-z|A-Z]/)) {
-        return `${line};`;
-      }
-      return line;
-    })
-    .join('\n');
-}
 
 Object.entries(doc).map(([serviceName, funcitonMap]) => {
   Object.entries(funcitonMap).forEach(([functionName, functionContent]) => {
     const functionNameInPascalCase = toPascalCase(functionName);
     const {
       errorCodes,
-      url,
       requestBodyType,
       responseDataType,
     } = functionContent;
     // TODO : What if function has no errorCode?
     result += `
-  export interface ${functionNameInPascalCase}ResponseType extends BaseResponseType {
+  export interface ${functionNameInPascalCase}ResponseType extends ${requestBodyType ? 'BaseResponseType': 'NoDataResponseType'} {
   ${
     errorCodes
     ? `  errorCode?: ErrorCode.${functionNameInPascalCase}ErrorCode | ErrorCode.DefaultErrorCode;`
@@ -108,7 +88,8 @@ Object.entries(doc).map(([serviceName, funcitonMap]) => {
   })
 });
 
-result += '}'
+result += `}
+`;
 
 const filePath = path.join(outDir, 'ResponseType.ts');
 fs.writeFileSync(filePath, result);

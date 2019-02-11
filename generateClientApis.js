@@ -3,6 +3,7 @@ const yaml = require('js-yaml');
 const toCamelCase = require('./utils/toCamelCase');
 const toPascalCase = require('./utils/toPascalCase');
 const path = require('path');
+const convertTypeToString = require('./utils/convertTypeToString');
 
 const outDir = path.resolve(process.argv[2]);
 
@@ -18,7 +19,6 @@ const doc = yaml.safeLoad(definitionFile);
 
 
 let result = `import { RequestBodyType } from '../RequestBodyType';
-import { ParamMap } from '../ParamMap';
 import { ResponseType, ResponseDataType } from '../ResponseType';
 
 let sessionToken: string;
@@ -67,62 +67,60 @@ Object.entries(doc).map(([serviceName, functionMap]) => {
     const functionNameInPascalCase = toPascalCase(functionName);
     const {
       errorCodes,
-      url,
-      method,
       requestBodyType,
       responseDataType,
       baseServerUrl,
     } = functionContent;
+    const urlPath = `/${serviceName}/${functionName}`;
 
-    // <BEFORE>
-    // const url = `${baseServerURL}/post/:postId/like`;
-
-    // <AFTER>
-    // const url = `${baseServerURL}/post/${params.postId}/like`;
-
-    const replacedUrl = url.split('/').map(urlPart => {
-      if (!urlPart.startsWith(':')) {
-        return urlPart;
-      }
-      return `\${params.${urlPart.substring(1)}}`;
-    }).join('/');
+    const hasResponseData = !!responseDataType;
 
     result += `
-    export async function ${toCamelCase(functionName)}(
-        params: ParamMap.${functionNameInPascalCase}ParamMap,
-        body: RequestBodyType.${functionNameInPascalCase}RequestBodyType,
-    ): Promise<HgsRestApiResponse<ResponseType.${functionNameInPascalCase}ResponseType, ResponseDataType.${functionNameInPascalCase}ResponseDataType>> {`;
+  export async function ${toCamelCase(functionName)}(`;
+
+    if (requestBodyType) {
+      result += `
+    body: RequestBodyType.${functionNameInPascalCase}RequestBodyType,
+  `;
+    }
+
+    result += hasResponseData
+    ? `): Promise<HgsRestApiResponse<ResponseType.${functionNameInPascalCase}ResponseType, ResponseDataType.${functionNameInPascalCase}ResponseDataType>> {`
+    : `): Promise<ResponseType.${functionNameInPascalCase}ResponseType> {`;
 
     if (baseServerUrl) {
       result += `
-        const url = isDevelopment
-          ? '${baseServerUrl}${replacedUrl}'
-          : \`\${baseServerUrl}${replacedUrl}\`;
+    const url = isDevelopment
+      ? '${baseServerUrl}${urlPath}'
+      : \`\${baseServerUrl}${urlPath}\`;
       `;
     } else {
-      result += `const url = \`\${baseServerUrl}${replacedUrl}\`;`;
+      result += `
+    const url = \`\${baseServerUrl}${urlPath}\`;`;
     }
 
     result += `
-        const response = await fetch(url, {
-            method: '${method}',
-            headers: {
-                'content-type': 'application/json',
-                ...(sessionToken
-                  ? { Authorization: \`sessionToken \${sessionToken}\` }
-                  : {}
-                )
-            },${
-  method !== 'GET'
-  ? `\n            body: JSON.stringify(body),`
-  : ''}
-        });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(sessionToken
+          ? { Authorization: \`sessionToken \${sessionToken}\` }
+          : {}
+        ),
+      },`;
+    if (requestBodyType) {
+      result += `
+      body: JSON.stringify(body),`;
+    }
+    result += `
+    });
 
-        if (!is2xx(response)) {
-            throw new Error(response.status.toString());
-        }
-        return new HgsRestApiResponse(await response.json());
-    }`;
+    if (!is2xx(response)) {
+      throw new Error(response.status.toString());
+    }
+    ${hasResponseData ? `return new HgsRestApiResponse(await response.json());` : `return await response.json();`}
+  }`;
   });
   result += '\n'
 });
