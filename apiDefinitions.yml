@@ -83,7 +83,7 @@ comment:
   writeSubComment:
     passAuth: false
     requestBodyType:
-      parentCommentId: string
+      parentCommentId: number
       contentS3Key: string
       postId: number
     responseDataType:
