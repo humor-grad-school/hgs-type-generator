@@ -19,6 +19,7 @@ let result = `
 export namespace ErrorCode {
   export enum DefaultErrorCode {
     InternalServerError = 'InternalServerError',
+    Unauthenticated = 'Unauthenticated',
   }
 `;
 
